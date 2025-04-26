@@ -185,11 +185,12 @@ export function hasInvalidGregorianData(obj) {
   } else return false;
 }
 
-export function hasInvalidTimeData(obj) {
+export function hasInvalidTimeData(obj, strictHours = false) {
   const { hour, minute, second, millisecond } = obj;
   const validHour =
       integerBetween(hour, 0, 23) ||
-      (hour === 24 && minute === 0 && second === 0 && millisecond === 0),
+      (hour === 24 && minute === 0 && second === 0 && millisecond === 0) ||
+      (strictHours && integerBetween(hour, 0, 11)),
     validMinute = integerBetween(minute, 0, 59),
     validSecond = integerBetween(second, 0, 59),
     validMillisecond = integerBetween(millisecond, 0, 999);

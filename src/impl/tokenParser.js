@@ -447,19 +447,20 @@ export class TokenParser {
     }
   }
 
-  explainFromTokens(input, strictHours = false) {
+  explainFromTokens(input, shouldCheckStrictHours = false) {
     if (!this.isValid) {
       return { input, tokens: this.tokens, invalidReason: this.invalidReason };
     } else {
       const [rawMatches, matches] = match(input, this.regex, this.handlers),
         [result, zone, specificOffset] = matches
           ? dateTimeFromMatches(matches)
-          : [null, null, undefined];
-      if (strictHours && hasOwnProperty(matches, "h") && (matches.h > 12 || matches.h < 1)) {
-        throw new ConflictingSpecificationError(
-          "Can't go over 12 or under 1 hours when specifying 12-hour format and strict hour parsing enabled"
-        );
-      }
+          : [null, null, undefined],
+        isStrictHoursInvalid = shouldCheckStrictHours && hasOwnProperty(matches, "h") && (matches.h > 12 || matches.h < 1)
+      // if (strictHours && hasOwnProperty(matches, "h") && (matches.h > 12 || matches.h < 1)) {
+      //   throw new ConflictingSpecificationError(
+      //     "Can't go over 12 or under 1 hours when specifying 12-hour format and strict hour parsing enabled"
+      //   );
+      // }
       if (hasOwnProperty(matches, "a") && hasOwnProperty(matches, "H")) {
         throw new ConflictingSpecificationError(
           "Can't include meridiem when specifying 24-hour format"
@@ -474,6 +475,7 @@ export class TokenParser {
         result,
         zone,
         specificOffset,
+        isStrictHoursInvalid,
       };
     }
   }
@@ -487,19 +489,19 @@ export class TokenParser {
   }
 }
 
-export function explainFromTokens(locale, input, format, strictHours = false) {
+export function explainFromTokens(locale, input, format, shouldCheckStrictHours = false) {
   const parser = new TokenParser(locale, format);
-  return parser.explainFromTokens(input, strictHours);
+  return parser.explainFromTokens(input, shouldCheckStrictHours);
 }
 
 export function parseFromTokens(locale, input, format, strictHours = false) {
-  const { result, zone, specificOffset, invalidReason } = explainFromTokens(
+  const { result, zone, specificOffset, invalidReason, isStrictHoursInvalid } = explainFromTokens(
     locale,
     input,
     format,
     strictHours
   );
-  return [result, zone, specificOffset, invalidReason];
+  return [result, zone, specificOffset, invalidReason, isStrictHoursInvalid];
 }
 
 export function formatOptsToTokens(formatOpts, locale) {

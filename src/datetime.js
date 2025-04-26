@@ -433,7 +433,7 @@ function quickDT(obj, opts) {
       }
     }
 
-    const invalid = hasInvalidGregorianData(obj) || hasInvalidTimeData(obj);
+    const invalid = hasInvalidGregorianData(obj) || hasInvalidTimeData(obj, opts.strictHours);
     if (invalid) {
       return DateTime.invalid(invalid);
     }
@@ -847,7 +847,7 @@ export default class DateTime {
         : containsOrdinal
         ? hasInvalidOrdinalData(normalized)
         : hasInvalidGregorianData(normalized),
-      invalid = higherOrderInvalid || hasInvalidTimeData(normalized);
+      invalid = higherOrderInvalid || hasInvalidTimeData(normalized, opts.strictHours);
 
     if (invalid) {
       return DateTime.invalid(invalid);
@@ -971,12 +971,7 @@ export default class DateTime {
         numberingSystem,
         defaultToEN: true,
       }),
-      [vals, parsedZone, specificOffset, invalid] = parseFromTokens(
-        localeToUse,
-        text,
-        fmt,
-        strictHours
-      );
+      [vals, parsedZone, specificOffset, invalid, strictHoursInvalid] = parseFromTokens(localeToUse, text, fmt);
     if (invalid) {
       return DateTime.invalid(invalid);
     } else {
